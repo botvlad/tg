@@ -1,255 +1,183 @@
+import telebot
+from telebot import types
+import sqlite3
+import time
+import os
+from flask import Flask
+from threading import Thread
 
-Search
+# --- НАСТРОЙКИ ---
+TOKEN = "8575208075:AAGPuQWeTjo8DbQQgKrJdK4ww86RDvp5vuA"
+bot = telebot.TeleBot(TOKEN)
 
-Live tail
-GMT+3
+# Список ID админов (ОБЯЗАТЕЛЬНО проверь свои ID тут)
+ADMIN_IDS = [8063642030, 8453400444] 
 
+# ID канала для заявок на вывод
+PAYMENT_CHANNEL_ID = "@EliteStarsD" 
 
+# --- СЕРВЕР ДЛЯ RENDER ---
+app = Flask('')
+@app.route('/')
+def home(): return "EliteStars System is Live!"
 
-Collecting blinker>=1.9.0 (from flask->-r requirements.txt (line 2))
-  Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
-Collecting click>=8.1.3 (from flask->-r requirements.txt (line 2))
-  Downloading click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
-Collecting itsdangerous>=2.2.0 (from flask->-r requirements.txt (line 2))
-  Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
-Collecting jinja2>=3.1.2 (from flask->-r requirements.txt (line 2))
-  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
-Collecting markupsafe>=2.1.1 (from flask->-r requirements.txt (line 2))
-  Downloading markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
-Collecting werkzeug>=3.1.0 (from flask->-r requirements.txt (line 2))
-  Downloading werkzeug-3.1.4-py3-none-any.whl.metadata (4.0 kB)
-Collecting charset_normalizer<4,>=2 (from requests->pyTelegramBotAPI->-r requirements.txt (line 1))
-  Downloading charset_normalizer-3.4.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (37 kB)
-Collecting idna<4,>=2.5 (from requests->pyTelegramBotAPI->-r requirements.txt (line 1))
-  Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
-Collecting urllib3<3,>=1.21.1 (from requests->pyTelegramBotAPI->-r requirements.txt (line 1))
-  Downloading urllib3-2.6.2-py3-none-any.whl.metadata (6.6 kB)
-Collecting certifi>=2017.4.17 (from requests->pyTelegramBotAPI->-r requirements.txt (line 1))
-  Downloading certifi-2026.1.4-py3-none-any.whl.metadata (2.5 kB)
-Downloading pytelegrambotapi-4.29.1-py3-none-any.whl (294 kB)
-Downloading flask-3.1.2-py3-none-any.whl (103 kB)
-Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
-Downloading click-8.3.1-py3-none-any.whl (108 kB)
-Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
-Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
-Downloading markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
-Downloading werkzeug-3.1.4-py3-none-any.whl (224 kB)
-Downloading requests-2.32.5-py3-none-any.whl (64 kB)
-Downloading charset_normalizer-3.4.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (153 kB)
-Downloading idna-3.11-py3-none-any.whl (71 kB)
-Downloading urllib3-2.6.2-py3-none-any.whl (131 kB)
-Downloading certifi-2026.1.4-py3-none-any.whl (152 kB)
-Installing collected packages: urllib3, markupsafe, itsdangerous, idna, click, charset_normalizer, certifi, blinker, werkzeug, requests, jinja2, pyTelegramBotAPI, flask
-Successfully installed blinker-1.9.0 certifi-2026.1.4 charset_normalizer-3.4.4 click-8.3.1 flask-3.1.2 idna-3.11 itsdangerous-2.2.0 jinja2-3.1.6 markupsafe-3.0.3 pyTelegramBotAPI-4.29.1 requests-2.32.5 urllib3-2.6.2 werkzeug-3.1.4
-[notice] A new release of pip is available: 25.1.1 -> 25.3
-[notice] To update, run: pip install --upgrade pip
-==> Uploading build...
-==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
-==> Deploying...
-==> Uploaded in 14.1s. Compression took 3.4s
-==> Build successful 🎉
-==> Running 'python main.py'
- * Serving Flask app ''
- * Debug mode: off
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:10000
- * Running on http://10.21.178.190:10000
-Press CTRL+C to quit
-127.0.0.1 - - [04/Jan/2026 18:54:59] "HEAD / HTTP/1.1" 200 -
-2026-01-04 18:55:04,440 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:04,442 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-==> Your service is live 🎉
-==> 
-==> ///////////////////////////////////////////////////////////
-==> 
-==> Available at your primary URL https://tg-glwc.onrender.com
-==> 
-==> ///////////////////////////////////////////////////////////
-2026-01-04 18:55:08,521 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:08,522 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-127.0.0.1 - - [04/Jan/2026 18:55:11] "GET / HTTP/1.1" 200 -
-2026-01-04 18:55:13,347 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:13,348 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-2026-01-04 18:55:19,676 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:19,677 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-2026-01-04 18:55:26,007 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:26,009 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-2026-01-04 18:55:38,810 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:55:38,811 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-"
-2026-01-04 18:56:03,136 (__init__.py:1241 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running"
-2026-01-04 18:56:03,138 (__init__.py:1243 MainThread) ERROR - TeleBot: "Exception traceback:
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 1234, in __threaded_polling
-    polling_thread.raise_exceptions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 115, in raise_exceptions
-    raise self.exception_info
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/util.py", line 97, in run
-    task(*args, **kwargs)
-    ~~~~^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 688, in __retrieve_updates
-    updates = self.get_updates(offset=(self.last_update_id + 1),
-                               allowed_updates=allowed_updates,
-                               timeout=timeout, long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/__init__.py", line 660, in get_updates
-    json_updates = apihelper.get_updates(
-        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
-        long_polling_timeout=long_polling_timeout)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 339, in get_updates
-    return _make_request(token, method_url, params=payload)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 168, in _make_request
-    json_result = _check_result(method_name, result)
-  File "/opt/render/project/src/.venv/lib/python3.13/site-packages/telebot/apihelper.py", line 197, in _check_result
-    raise ApiTelegramException(method_name, result, result_json)
-telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+def run_web():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+
+# --- БАЗА ДАННЫХ ---
+DB_PATH = 'bot_database.db'
+
+def db_query(sql, params=()):
+    with sqlite3.connect(DB_PATH, check_same_thread=False) as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql, params)
+        res = cursor.fetchall()
+        conn.commit()
+        return res
+
+def init_db():
+    db_query('''CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY, 
+        username TEXT, 
+        balance REAL DEFAULT 0, 
+        last_bonus INTEGER DEFAULT 0,
+        referrals INTEGER DEFAULT 0,
+        referrer_id INTEGER DEFAULT 0,
+        is_activated INTEGER DEFAULT 0,
+        is_banned INTEGER DEFAULT 0,
+        last_seen INTEGER DEFAULT 0)''')
+    db_query('''CREATE TABLE IF NOT EXISTS sponsors (channel_id TEXT PRIMARY KEY, link TEXT)''')
+    check = db_query("SELECT count(*) FROM sponsors")
+    if check[0][0] == 0:
+        db_query("INSERT INTO sponsors (channel_id, link) VALUES (?, ?)", ("@EliteStarsH", "https://t.me/EliteStarsH"))
+
+# --- АДМИН-КОМАНДЫ (ТОЛЬКО ДЛЯ ADMIN_IDS) ---
+
+@bot.message_handler(commands=['admin'])
+def admin_panel(message):
+    if message.from_user.id not in ADMIN_IDS:
+        return # Обычные пользователи ничего не увидят
+    
+    sponsors = db_query("SELECT channel_id FROM sponsors")
+    sp_text = "\n".join([f"🔹 {s[0]}" for s in sponsors])
+    text = (f"🛠 <b>АДМИН-ПАНЕЛЬ</b>\n\n"
+            f"📡 <b>Спонсоры:</b>\n{sp_text}\n\n"
+            f"💰 <b>Команды баланса:</b>\n"
+            f"➕ <code>/give ID СУММА</code> — Выдать\n"
+            f"➖ <code>/take ID СУММА</code> — Забрать\n\n"
+            f"📊 <code>/stats</code> — Кол-во юзеров")
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
+
+@bot.message_handler(commands=['give'])
+def give_stars(message):
+    if message.from_user.id in ADMIN_IDS:
+        try:
+            parts = message.text.split()
+            target_id = int(parts[1])
+            amount = float(parts[2])
+            
+            # Проверяем есть ли юзер в базе
+            user = db_query("SELECT user_id FROM users WHERE user_id = ?", (target_id,))
+            if not user:
+                bot.send_message(message.chat.id, f"❌ Ошибка: Юзер <code>{target_id}</code> еще не заходил в бота!", parse_mode="HTML")
+                return
+
+            db_query("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, target_id))
+            bot.send_message(message.chat.id, f"✅ Выдано <b>{amount}</b> ⭐️ пользователю <code>{target_id}</code>", parse_mode="HTML")
+            try: bot.send_message(target_id, f"🎁 Админ начислил вам <b>{amount}</b> ⭐️!")
+            except: pass
+        except:
+            bot.send_message(message.chat.id, "⚠️ Формат: `/give ID СУММА`")
+
+@bot.message_handler(commands=['take'])
+def take_stars(message):
+    if message.from_user.id in ADMIN_IDS:
+        try:
+            parts = message.text.split()
+            target_id, amount = int(parts[1]), float(parts[2])
+            db_query("UPDATE users SET balance = balance - ? WHERE user_id = ?", (amount, target_id))
+            bot.send_message(message.chat.id, f"✅ Списано <b>{amount}</b> ⭐️ у <code>{target_id}</code>", parse_mode="HTML")
+        except:
+            bot.send_message(message.chat.id, "⚠️ Формат: `/take ID СУММА`")
+
+@bot.message_handler(commands=['stats'])
+def stats(message):
+    if message.from_user.id in ADMIN_IDS:
+        count = db_query("SELECT count(*) FROM users")[0][0]
+        bot.send_message(message.chat.id, f"📊 В базе данных: {count} пользователей")
+
+# --- ГЛАВНАЯ ЛОГИКА (START И МЕНЮ) ---
+
+def check_sub(user_id):
+    sponsors = db_query("SELECT channel_id FROM sponsors")
+    for s in sponsors:
+        try:
+            status = bot.get_chat_member(s[0], user_id).status
+            if status not in ['member', 'administrator', 'creator']: return False
+        except: continue
+    return True
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    uid = message.from_user.id
+    uname = message.from_user.username or "User"
+    
+    # Регистрация юзера если его нет
+    user = db_query("SELECT user_id FROM users WHERE user_id = ?", (uid,))
+    if not user:
+        ref_id = 0
+        args = message.text.split()
+        if len(args) > 1 and args[1].isdigit():
+            ref_id = int(args[1])
+        db_query("INSERT INTO users (user_id, username, referrer_id) VALUES (?, ?, ?)", (uid, uname, ref_id))
+    
+    if check_sub(uid):
+        # Начисление за рефа при активации
+        u_data = db_query("SELECT is_activated, referrer_id FROM users WHERE user_id = ?", (uid,))
+        if u_data and u_data[0][0] == 0:
+            rid = u_data[0][1]
+            db_query("UPDATE users SET is_activated = 1 WHERE user_id = ?", (uid,))
+            if rid and rid != 0:
+                db_query("UPDATE users SET balance = balance + 5, referrals = referrals + 1 WHERE user_id = ?", (rid,))
+                try: bot.send_message(rid, f"🎉 Друг @{uname} подписался! Вам +5 ⭐️")
+                except: pass
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            types.InlineKeyboardButton("🌟 Заработать", callback_data="earn"),
+            types.InlineKeyboardButton("📩 Вывод", callback_data="withdraw_menu"),
+            types.InlineKeyboardButton("👤 Профиль", callback_data="profile"),
+            types.InlineKeyboardButton("🎁 Бонус", callback_data="bonus")
+        )
+        bot.send_message(message.chat.id, "✨ <b>Меню EliteStars:</b>", reply_markup=markup, parse_mode="HTML")
+    else:
+        # Кнопки подписки
+        sponsors = db_query("SELECT channel_id, link FROM sponsors")
+        markup = types.InlineKeyboardMarkup()
+        for i, s in enumerate(sponsors, 1):
+            markup.add(types.InlineKeyboardButton(f"⭐️ Канал №{i}", url=s[1]))
+        markup.add(types.InlineKeyboardButton("✅ Проверить подписку", callback_data="sub_check"))
+        bot.send_message(message.chat.id, "⚠️ <b>Подпишитесь для работы:</b>", reply_markup=markup, parse_mode="HTML")
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    uid = call.from_user.id
+    
+    if call.data == "sub_check":
+        if check_sub(uid):
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+            start(call.message)
+        else:
+            bot.answer_callback_query(call.id, "❌ Подписка не найдена!", show_alert=True)
+    
+    elif call.data == "profile":
+        res = db_query("SELECT balance, referrals FROM users WHERE user_id = ?", (uid,))
+        bot.edit_message_text(f"👤 <b>Профиль:</b>\n🆔 ID: <code>{uid}</code>\n💰 Баланс: <b>{res[0][0]:.2f} ⭐️</b>\n👥 Рефералы: {res[0][1]}", 
+                              call.message.chat.id, call.message.message_id, parse_mode="HTML")
+
+# --- ЗАПУСК ---
+if __name__ == '__main__':
+    init_db()
+    Thread(target=run_web).start()
+    bot.infinity_polling()
