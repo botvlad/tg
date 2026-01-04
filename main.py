@@ -139,7 +139,22 @@ def process_promo(message):
     
     bot.send_message(message.chat.id, f"✅ <b>Начислено {amount} ⭐️</b>", reply_markup=get_main_menu(), parse_mode="HTML")
 
-# --- АДМИН КОМАНДЫ ---
+# --- АДМИН КОМАНДЫ (УПРАВЛЕНИЕ) ---
+
+@bot.message_handler(commands=['admin'])
+def admin_panel(message):
+    if message.from_user.id in ADMIN_IDS:
+        total = db_query("SELECT count(*) FROM users")[0][0]
+        text = (f"🛠 <b>Админ-панель EliteStars</b>\n\n"
+                f"📊 Юзеров в базе: <code>{total}</code>\n\n"
+                f"➕ <code>/give ID СУММА</code> - Начислить\n"
+                f"➖ <code>/take ID СУММА</code> - Забрать\n"
+                f"💎 <code>/setbal ID СУММА</code> - Установить\n"
+                f"🚫 <code>/ban ID</code> - Забанить\n"
+                f"🔓 <code>/unban ID</code> - Разбанить\n"
+                f"📢 <code>/send ТЕКСТ</code> - Рассылка")
+        bot.send_message(message.chat.id, text, parse_mode="HTML")
+
 @bot.message_handler(commands=['give'])
 def give_stars(message):
     if message.from_user.id in ADMIN_IDS:
@@ -147,8 +162,8 @@ def give_stars(message):
             parts = message.text.split()
             tid, amt = int(parts[1]), float(parts[2])
             db_query("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amt, tid))
-            bot.send_message(message.chat.id, f"✅ Выдано {amt} ⭐️ пользователю {tid}")
-            try: bot.send_message(tid, f"🎁 Админ начислил вам {amt} ⭐️!")
+            bot.send_message(message.chat.id, f"✅ Выдано {amt} ⭐️ пользователю <code>{tid}</code>", parse_mode="HTML")
+            try: bot.send_message(tid, f"🎁 Админ начислил вам <b>{amt} ⭐️</b>!", parse_mode="HTML")
             except: pass
         except: bot.send_message(message.chat.id, "Ошибка! Формат: `/give ID СУММА`")
 
@@ -158,34 +173,46 @@ def take_stars(message):
         try:
             parts = message.text.split()
             tid, amt = int(parts[1]), float(parts[2])
-            db_query("UPDATE users SET balance = balance - ? WHERE user_id = ?", (amt, tid))
-            bot.send_message(message.chat.id, f"✅ Списано {amt} ⭐️ у {tid}")
+            res = db_query("SELECT balance FROM users WHERE user_id = ?", (tid,))
+            if res:
+                new_bal = max(0, res[0][0] - amt)
+                db_query("UPDATE users SET balance = ? WHERE user_id = ?", (new_bal, tid))
+                bot.send_message(message.chat.id, f"✅ Списано {amt} ⭐️. Текущий баланс <code>{tid}</code>: {new_bal}", parse_mode="HTML")
+                try: bot.send_message(tid, f"⚠️ С вашего баланса списано <b>{amt} ⭐️</b>.", parse_mode="HTML")
+                except: pass
         except: bot.send_message(message.chat.id, "Ошибка! Формат: `/take ID СУММА`")
 
-@bot.message_handler(commands=['admin'])
-def admin_panel(message):
+@bot.message_handler(commands=['setbal'])
+def set_balance(message):
     if message.from_user.id in ADMIN_IDS:
-        update_activity(message.from_user.id)
-        sponsors = get_sponsors()
-        sp_text = "\n".join([f"🔹 {s[0]}" for s in sponsors])
-        promos = db_query("SELECT code, amount, current_uses, max_uses FROM promocodes")
-        pr_text = "\n".join([f"🎫 <code>{p[0]}</code> | {p[1]}⭐️ | {p[2]}/{p[3]}" for p in promos])
-        
-        text = (f"🛠 <b>Админ-панель EliteStars</b>\n\n"
-                f"📡 <b>Спонсоры:</b>\n{sp_text if sp_text else 'Пусто'}\n"
-                f"🎫 <b>Промокоды:</b>\n{pr_text if pr_text else 'Нет активных'}\n\n"
-                f"💰 <b>Команды баланса:</b>\n"
-                f"➕ <code>/give ID СУММА</code>\n"
-                f"➖ <code>/take ID СУММА</code>\n\n"
-                f"📊 <code>/stats</code> | 🚫 <code>/ban ID</code>\n"
-                f"📢 <code>/send ТЕКСТ</code>")
-        bot.send_message(message.chat.id, text, parse_mode="HTML")
+        try:
+            parts = message.text.split()
+            tid, amt = int(parts[1]), float(parts[2])
+            db_query("UPDATE users SET balance = ? WHERE user_id = ?", (amt, tid))
+            bot.send_message(message.chat.id, f"✅ Баланс <code>{tid}</code> установлен на <b>{amt} ⭐️</b>", parse_mode="HTML")
+        except: bot.send_message(message.chat.id, "Ошибка! Формат: `/setbal ID СУММА`")
 
-@bot.message_handler(commands=['stats'])
-def get_stats(message):
+@bot.message_handler(commands=['ban'])
+def ban_user(message):
     if message.from_user.id in ADMIN_IDS:
-        all_count = db_query("SELECT count(*) FROM users")[0][0]
-        bot.send_message(message.chat.id, f"📊 Всего пользователей: {all_count}")
+        try:
+            tid = int(message.text.split()[1])
+            db_query("UPDATE users SET is_banned = 1 WHERE user_id = ?", (tid,))
+            bot.send_message(message.chat.id, f"🚫 Юзер <code>{tid}</code> забанен.", parse_mode="HTML")
+        except: bot.send_message(message.chat.id, "Формат: `/ban ID`")
+
+@bot.message_handler(commands=['send'])
+def broadcast(message):
+    if message.from_user.id in ADMIN_IDS:
+        text = message.text.replace('/send', '').strip()
+        if not text: return bot.send_message(message.chat.id, "Введите текст после /send")
+        users = db_query("SELECT user_id FROM users")
+        for u in users:
+            try: bot.send_message(u[0], text, parse_mode="HTML")
+            except: continue
+        bot.send_message(message.chat.id, "✅ Рассылка завершена.")
+
+# --- ОСНОВНЫЕ ОБРАБОТЧИКИ ---
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -195,7 +222,7 @@ def start(message):
     user = db_query("SELECT is_activated, referrer_id, is_banned FROM users WHERE user_id = ?", (uid,))
     
     if user and user[0][2] == 1:
-        bot.send_message(message.chat.id, "🚫 Бан.")
+        bot.send_message(message.chat.id, "🚫 Вы заблокированы в системе.")
         return
 
     if not user:
@@ -235,7 +262,6 @@ def callback_inline(call):
         bot.answer_callback_query(call.id, "🚫 Бан!")
         return
 
-    # Админ-кнопки в канале выплат
     if call.data.startswith("adm_"):
         if uid not in ADMIN_IDS: return
         action = call.data.split("_")[1]
@@ -294,3 +320,4 @@ if __name__ == '__main__':
     init_db()
     Thread(target=run_web).start()
     bot.infinity_polling()
+    
