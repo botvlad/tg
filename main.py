@@ -2,12 +2,14 @@ import telebot
 from telebot import types
 import sqlite3
 from flask import Flask, request
+import os
 
 # ================== КОНФИГ ==================
 TOKEN = "8504419294:AAFZrDw8pUVrAG29E0it-fZHlN_g3q9PSAs"
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
+# Админы
 ADMIN_IDS = [8063642030, 8453400444]
 
 # ================== БАЗА ДАННЫХ ==================
@@ -20,7 +22,6 @@ def db(sql, params=()):
         return res
 
 def init_db():
-    # Пользователи
     db("""
     CREATE TABLE IF NOT EXISTS users(
         user_id INTEGER PRIMARY KEY,
@@ -30,21 +31,18 @@ def init_db():
         referrer INTEGER,
         is_activated INTEGER DEFAULT 0
     )""")
-    # Спонсоры для активации
     db("""
     CREATE TABLE IF NOT EXISTS sponsors(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         channel TEXT,
         link TEXT
     )""")
-    # Спонсоры для меню “Заработать”
     db("""
     CREATE TABLE IF NOT EXISTS sponsor_tasks(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         channel TEXT,
         link TEXT
     )""")
-    # Промокоды
     db("""
     CREATE TABLE IF NOT EXISTS promocodes(
         code TEXT PRIMARY KEY,
@@ -52,21 +50,18 @@ def init_db():
         max_uses INTEGER,
         uses INTEGER DEFAULT 0
     )""")
-    # Использованные промокоды
     db("""
     CREATE TABLE IF NOT EXISTS used_promos(
         user_id INTEGER,
         code TEXT,
         PRIMARY KEY(user_id, code)
     )""")
-    # Начисления за подписки
     db("""
     CREATE TABLE IF NOT EXISTS sponsor_rewards(
         user_id INTEGER,
         sponsor TEXT,
         PRIMARY KEY(user_id, sponsor)
     )""")
-    # Скриншоты комментариев
     db("""
     CREATE TABLE IF NOT EXISTS comment_screens(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,7 +163,7 @@ def start(m):
         return
 
     unlock_user(uid)
-    bot.send_message(uid, "✨ Добро пожаловать в <b>DROPSTARSS</b>", reply_markup=main_menu(), parse_mode="HTML")
+    bot.send_message(uid, "✨ Добро пожаловать", reply_markup=main_menu(), parse_mode="HTML")
 
 # ================== CALLBACK ==================
 @bot.callback_query_handler(func=lambda c: True)
@@ -196,7 +191,6 @@ def cb(c):
     else:
         unlock_user(uid)
 
-    # Главное меню
     if c.data == "earn":
         bot.edit_message_text("🌟 Забирай звёзды любым способом:", c.message.chat.id, c.message.message_id, reply_markup=earn_menu())
         return
@@ -248,7 +242,9 @@ def index():
 if __name__ == "__main__":
     init_db()
     bot.remove_webhook()
-    webhook_url = "https://YOUR-RENDER-DOMAIN.com/" + TOKEN
+    # Вставь сюда реальный URL своего Render сервиса
+    RENDER_URL = os.environ.get("RENDER_EXTERNAL_URL")  # Render автоматически ставит переменную
+    webhook_url = f"{RENDER_URL}/{TOKEN}"
     bot.set_webhook(url=webhook_url)
-    print("DROPSTARSS запущен через webhook")
+    print("DROPSTARSS запущен через webhook на Render")
     app.run(host="0.0.0.0", port=5000)
